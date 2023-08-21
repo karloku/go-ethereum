@@ -683,7 +683,9 @@ func TestTruncateTail(t *testing.T) {
 	require.NoError(t, batch.commit())
 
 	// nothing to do, all the items should still be there.
-	f.truncateTail(0)
+	if err := f.truncateTail(0); err != nil {
+		t.Fatal(err)
+	}
 	fmt.Println(f.dumpIndexString(0, 1000))
 	checkRetrieve(t, f, map[uint64][]byte{
 		0: getChunk(13, 0xFF),
@@ -698,8 +700,7 @@ func TestTruncateTail(t *testing.T) {
 
 	// truncate single element( item 0 ), deletion is only supported at file level
 	// hiddenSize should be 13 (size of item 0)
-	err = f.truncateTail(1)
-	if err != nil {
+	if err := f.truncateTail(1); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(f.dumpIndexString(0, 1000))
@@ -739,8 +740,7 @@ func TestTruncateTail(t *testing.T) {
 
 	// truncate two elements( item 0, item 1 ), the file 0 should be deleted
 	// hiddenSize should be 0, as file 0 was deleted
-	err = f.truncateTail(2)
-	if err != nil {
+	if err := f.truncateTail(2); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(f.dumpIndexString(0, 1000))
@@ -782,8 +782,7 @@ func TestTruncateTail(t *testing.T) {
 
 	// truncate two elements( item 0, item 1, item 2 ), the file 0 should be deleted
 	// hiddenSize should be 15 (size of item 2), as item 0 and item 1 was deleted with file 0
-	err = f.truncateTail(3)
-	if err != nil {
+	if err := f.truncateTail(3); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(f.dumpIndexString(0, 1000))
@@ -825,8 +824,7 @@ func TestTruncateTail(t *testing.T) {
 
 	// truncate all, the entire freezer should be deleted
 	// the hidden size should be 23 (hidden items in last file) as the new tailId is actually the headId
-	err = f.truncateTail(8)
-	if err != nil {
+	if err := f.truncateTail(8); err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println(f.dumpIndexString(0, 1000))

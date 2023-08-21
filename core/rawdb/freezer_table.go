@@ -517,6 +517,11 @@ func (t *freezerTable) truncateTail(items uint64) error {
 		return err
 	}
 	// Truncate the deleted index entries from the index file.
+	// Close index file first to avoid "Access denied"
+	// error on Windows.
+	if err := t.index.Close(); err != nil {
+		return err
+	}
 	err = copyFrom(t.index.Name(), t.index.Name(), indexEntrySize*(newDeleted-deleted+1), func(f *os.File) error {
 		tailIndex := indexEntry{
 			filenum: newTailId,
@@ -529,9 +534,6 @@ func (t *freezerTable) truncateTail(items uint64) error {
 		return err
 	}
 	// Reopen the modified index file to load the changes
-	if err := t.index.Close(); err != nil {
-		return err
-	}
 	t.index, err = openFreezerFileForAppend(t.index.Name())
 	if err != nil {
 		return err
