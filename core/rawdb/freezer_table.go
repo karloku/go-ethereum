@@ -868,6 +868,8 @@ func (t *freezerTable) sizeHidden() (uint64, error) {
 	// return the starting offset of the first non-hidden item
 	buffer := make([]byte, indexEntrySize)
 	if _, err := t.index.ReadAt(buffer, int64((hiddenItems-offsetItems)*indexEntrySize)); err != nil {
+		// manual get the index at hiddenItems
+		// getIndices would meet EOF error when all items are hidden
 		return 0, err
 	}
 	index := new(indexEntry)
